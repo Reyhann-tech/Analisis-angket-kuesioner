@@ -176,19 +176,19 @@ if uploaded_file is not None:
     # ===================
     # TAB MENU
     # ===================
-    tab1, tab2, tab3, tab4 = st.tabs([
-        "Ringkasan",
-        "Validitas",
-        "Korelasi",
-        "Regresi"
-     ])
+    # tab1, tab2, tab3, tab4 = st.tabs([
+    #     "Ringkasan",
+    #     "Validitas",
+    #     "Korelasi",
+    #     "Regresi"
+    #  ])
         
     # =================================
     # RINGKASAN VARIABEL
     # =================================
-    with tab1:
+    # with tab1:
         
-     st.subheader("3. Ringkasan Variabel")
+    st.subheader("3. Ringkasan Variabel")
     
     ringkasan = []
     
@@ -235,8 +235,8 @@ if uploaded_file is not None:
     # =================================
     # VALIDITAS
     # =================================
-    with tab2:
-     st.subheader("5. Uji Validitas")
+    # with tab2:
+    st.subheader("5. Uji Validitas")
     
     for var in item_validitas:
         st.write(f"### {var}")
@@ -258,8 +258,8 @@ if uploaded_file is not None:
     # =================================
     # KORELASI
     # ================================= 
-    with tab3:
-     st.subheader("7. Korelasi Antar Variabel")
+    # with tab3:
+    st.subheader("7. Korelasi Antar Variabel")
     
     corr = data[prefixes].corr()
     st.dataframe(corr)
@@ -275,8 +275,8 @@ if uploaded_file is not None:
     # REGRESI OTOMATIS
     # jika ada Y
     # ================================= 
-    with tab4:
-     if "Y" in prefixes:
+    # with tab4:
+    if "Y" in prefixes:
         
         st.subheader("8. Regresi Linear")
         
