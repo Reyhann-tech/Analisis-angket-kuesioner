@@ -236,7 +236,7 @@ if uploaded_file is not None:
     # VALIDITAS
     # =================================
     # with tab2:
-    st.subheader("5. Uji Validitas")
+    st.subheader("4. Uji Validitas")
     
     for var in item_validitas:
         st.write(f"### {var}")
@@ -248,7 +248,7 @@ if uploaded_file is not None:
     # =================================
     # RALIBILITAS
     # ================================= 
-    st.subheader("6. Uji Reliabilitas")
+    st.subheader("5. Uji Reliabilitas")
     
     rel_df = pd.DataFrame(reliabilitas.items(), columns=["Variabel", "CronbachAlpha"])
     rel_df["status"] = rel_df["CronbachAlpha"].apply(lambda x: "Reliabel" if x >= 0.70 else "Tidak Reliabel")
@@ -259,7 +259,7 @@ if uploaded_file is not None:
     # KORELASI
     # ================================= 
     # with tab3:
-    st.subheader("7. Korelasi Antar Variabel")
+    st.subheader("6. Korelasi Antar Variabel")
     
     corr = data[prefixes].corr()
     st.dataframe(corr)
@@ -278,7 +278,7 @@ if uploaded_file is not None:
     # with tab4:
     if "Y" in prefixes:
         
-        st.subheader("8. Regresi Linear")
+        st.subheader("7. Regresi Linear")
         
         x_vars = [v for v in prefixes if v != "Y"]
         
@@ -348,7 +348,7 @@ if uploaded_file is not None:
     # =================================
     # VISUALISASI
     # ================================= 
-    st.subheader("9. Grafik Rata-rata Variabel")
+    st.subheader("8. Grafik Rata-rata Variabel")
     
     fig, ax = plt.subplots()
     
