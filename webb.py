@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import streamlit as st
 import pandas as pd
 import seaborn as sns
@@ -612,7 +611,6 @@ if uploaded_file is not None:
     
     with open(output, "rb") as f:
         st.download_button("Download Hasilnya nichh",f,file_name="Hasil_analisis.xlsx")
-=======
 import streamlit as st
 import pandas as pd
 import seaborn as sns
@@ -985,4 +983,3 @@ if uploaded_file is not None:
     
     with open(output, "rb") as f:
         st.download_button("Download Hasilnya nichh",f,file_name="Hasil_analisis.xlsx")
->>>>>>> 0cc4c55a438cf9993b6db6bb1e33c665ae9bfeb1
