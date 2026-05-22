@@ -92,8 +92,7 @@ st.write("upload file Excel atau CSV untuk dianalisis")
 # ==========================
 st.sidebar.title("Menu")
 
-uploaded_file = st.sidebar.file_uploader("Upload file Excel/CSV", type=["xlsx", "csv"])
-key = "upload_data"
+uploaded_file = st.sidebar.file_uploader("Upload file Excel/CSV", type=["xlsx", "csv"], key="upload_data")
 
 # ==========================
 # jika file ada
