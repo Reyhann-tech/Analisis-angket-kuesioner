@@ -411,7 +411,7 @@ if uploaded_file is not None:
         
         col2.metric("Jumlah responden", data.shape[0])
         
-        col3.metric("R² Model", round(r_square, 3))
+        col3.metric("R² (R square)", round(r_square, 3))
         
         # ===========================
         # AUTO INTERPRETASI UNIVERSAL
@@ -467,7 +467,7 @@ if uploaded_file is not None:
         </p>
         
         <p>
-        Model regresi memiliki nilai <b>R² = {r_square:.3f}</b>, sehingga kemampuan model dalam 
+        Model regresi memiliki nilai <b>R<sup>2</sup> (R square) = {r_square:.3f}</b>, sehingga kemampuan model dalam 
         menjelaskan variasi data termasuk kategori <b>{kualitas}</b>.
         </p>
         
@@ -500,7 +500,7 @@ if uploaded_file is not None:
         **{faktor_utama}** merupakan faktor yang memiliki pengaruh paling dominan
         dalam model penelitian dengan nilai koefisien sebesar **{round(nilai_coef,3)}**.
         
-        Model regresi yang dibentuk memiliki nilai **R² = {round(r_square,3)}**,
+        Model regresi yang dibentuk memiliki nilai **R<sup>2</sup> (R square) = {round(r_square,3)}**,
         yang menunjukkan bahwa kemampuan model dalam menjelaskan variasi variabel 
         target termasuk kategori **{kualitas_model}**.
         
@@ -510,7 +510,7 @@ if uploaded_file is not None:
         Secara keseluruhan, variabel-variabel penelitian memiliki kontribusi terhadap
         variabel target sesuai kekuatan model yang diperoleh."""
         
-        st.success(kesimpulan)
+        st.markdown(kesimpulan, unsafe_allow_html=True)
          
         # ===========================
         # grafik koefisien
