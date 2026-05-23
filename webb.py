@@ -9,6 +9,7 @@ from statsmodels.stats.outliers_influence import variance_inflation_factor
 from statsmodels.stats.diagnostic import het_breuschpagan
 import statsmodels.api as sm
 import numpy as np
+from graphviz import Digraph
 # Desain web
 st.set_page_config(page_title="Analisis kemacetan lalu lintas", 
                    page_icon="📊",
@@ -716,11 +717,59 @@ if uploaded_file is not None:
             • Jika P-value > 0.05 → tidak terdapat heteroskedastisitas.
             
             • Jika P-value < 0.05 → terdapat heteroskedastisitas.""")    
+   
+    # =================================
+    # DIAGRAM JALURBOTOMATIS
+    # ================================= 
+    st.subheader("9. Diagram Jalur Penelitian")
+    diagram = Digraph()
+    
+    # sryle
+    diagram.attr(
+        'node',
+        shape='box',
+        style='filled',
+        fillcolor='lightblue')
+    
+    # ambil semua prefixes
+    variabel = prefixes
+    target = "Y"
+    mediator = "Z"
+    
+    # variabel bebas selain Z dan Y
+    independen = [
+        v for v in variabel if v not in [target, mediator]
+    ]
+    # buat node independen
+    for var in variabel:
+        diagram.node(var)
         
+    # node mediator
+    if mediator in variabel:
+        diagram.node(
+            mediator,
+            fillcolor='lightblue')
+        
+    # node target
+    if target in variabel:
+        diagram.node(
+            target,fillcolor='orange')    
+    
+    # buat hubungan otomais
+    if mediator in variabel:
+        for var in independen:
+            diagram.edge(var, mediator)
+        diagram.edge(mediator, target)
+        
+    else:
+        for var in independen:
+            diagram.edge(var,target)
+            
+    st.graphviz_chart(diagram)  
     # =================================
     # VISUALISASI
     # ================================= 
-    st.subheader("9. Grafik Rata-rata Variabel")
+    st.subheader("10. Grafik Rata-rata Variabel")
     
     fig, ax = plt.subplots()
     
