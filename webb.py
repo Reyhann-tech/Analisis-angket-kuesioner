@@ -3,12 +3,12 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
-
+from scipy.stats import t
 from scipy.stats import shapiro
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 from statsmodels.stats.diagnostic import het_breuschpagan
 import statsmodels.api as sm
-
+import numpy as np
 # Desain web
 st.set_page_config(page_title="Analisis kemacetan lalu lintas", 
                    page_icon="📊",
@@ -191,16 +191,18 @@ if uploaded_file is not None:
         # ===========================
         reliabilitas[var] = cronbach_alpha(data[kolom])
         
-    # ===================
-    # TAB MENU
-    # ===================
-    # tab1, tab2, tab3, tab4 = st.tabs([
-    #     "Ringkasan",
-    #     "Validitas",
-    #     "Korelasi",
-    #     "Regresi"
-    #  ])
-        
+    # =================================
+    # HITUNG R TABEL OTOMATIS
+    # =================================    
+    n = len(data)
+    
+    df = n - 2
+    
+    alpha = 0.05
+    t_critical = t.ppf(1 - alpha/2, df)
+    r_tabel = t_critical / np.sqrt(t_critical**2 + df)
+    
+    st.write(f"R tabel ({n} responden) = {round(r_tabel,3)}")    
     # =================================
     # RINGKASAN VARIABEL
     # =================================
@@ -268,14 +270,54 @@ if uploaded_file is not None:
     # =================================
     # with tab2:
     st.subheader("4. Uji Validitas")
+    st.info(f"""
+            R tabel 
+            
+            Jumlah responden : {n}
+            
+            R tabel : {round(r_tabel,3)}
+            
+            Kriteria:
+            
+                r hitung > r tabel  → valid
+                
+                r hitung < r tabel  → Tidak valid
+                
+                Apa itu r hitung?
+                r hitung adalah nilai korelasi antara skor item pertanyaan 
+                dengan total skor variabel.
+                
+                Dari mana r hitung diperoleh?
+                Nilai r hitung diperoleh menggunakan korelasi pearson antara 
+                item dengan skor total variabel.
+                
+                Contoh:
+                Jika X1.1 memiliki r hitung = 0.669,
+                maka item X1.1 mempunyai hubungan sebesar 0.669 terhadap total variabel X1.
+            
+            """)
     
     for var in item_validitas:
         st.write(f"### {var}")
-        valid_df = pd.DataFrame(item_validitas[var].items(),columns=["Item", "r"])
+        valid_df = pd.DataFrame(item_validitas[var].items(),columns=["Item", "r hitung"])
+        # kolom status
+        valid_df["status"] = valid_df["r hitung"].apply(
+            lambda x: "Valid" if x > r_tabel else "Tidak Valid")
         
-        valid_df["status"] = valid_df["r"].apply(lambda x: "Valid" if x > 0.30 else "Tidak Valid")
-        st.dataframe(valid_df)
+        # warna
+        def warna_status(nilai):
+            
+            nilai = str(nilai).lower()
+            
+            if nilai == "valid":
+                return "background-color:#198754; color:white"
+            elif nilai == "tidak valid":
+                return "background-color:#dc3545; color:white"
+            return ""
         
+        styled_df = (valid_df.style
+                     .format({"r hitung": "{:.3f}"}).map(warna_status, subset=["status"]))
+        st.dataframe(styled_df,use_container_width=True)
     # =================================
     # RALIBILITAS
     # ================================= 
@@ -443,48 +485,48 @@ if uploaded_file is not None:
             kualitas = "cukup"
         else:kualitas = "lemah"
        
-        interpretasi = f""" 
+        st.markdown(f""" 
         <div style="
+        background-color:#0f5132;
         padding:20px; 
-        background: rgba(255,255,255,0.05);
-        border-radius:15px;
-        line-height:1.8;
-        text-align:left;
-        font-size:16px;">
+        border-radius:10px;
+        border-left:6px solid #198754;
+        margin-top:20px;">
         
-        <p>
+        <h3 style="color:white; margin-top:0;">
+        Interpretasi Hasil Regresi
+        </h3>
+        
+        <p style="
+        color:white;
+        text-allign:justify;
+        line-height:1.8;
+        margin:0;">
+        
         Hasil analisis menunjukkan bahwa 
         <b>{faktor_utama}</b> merupakan variabel yang paling dominan dalam model.
-        </p>
-        
-        <p>
+        <br><br>
         Variabel tersebut memiliki nilai koefisien sebesar <b>{round(nilai_coef,3)}</b>, 
-        yang menunjukkan bahwa variabel ini <b>{efek}</b> terhadap variabel target.
-        </p>
-        
-        <p>
-        Artinya, setiap peningkatan pada variabel tersebut akan cenderung <b>{arah}</b> nilai variabel target.
-        </p>
-        
-        <p>
-        Model regresi memiliki nilai <b>R<sup>2</sup> (R square) = {r_square:.3f}</b>, sehingga kemampuan model dalam 
-        menjelaskan variasi data termasuk kategori <b>{kualitas}</b>.
-        </p>
-        
-        <p>
+        yang menunjukkan bahwa variabel ini 
+        <b>{efek}</b> terhadap variabel target.
+        <br><br>      
+        Artinya, setiap peningkatan pada variabel tersebut akan cenderung 
+        <b>{arah}</b> nilai variabel target.
+        <br><br>
+        Model regresi memiliki nilai <b>R<sup>2</sup> (R square) = {r_square:.3f}</b>, 
+        sehingga kemampuan model dalam menjelaskan variasi data termasuk 
+        kategori <b>{kualitas}</b>.
+        <br><br>
         Secara keseluruhan, variabel-variabel dalam model memiliki pengaruh terhadap 
         variabel target sesuai dengan kekuatan model yang diperoleh.
         </p>
         
-        </div>"""
-        
-        st.markdown(interpretasi, unsafe_allow_html=True)
+        </div>""", unsafe_allow_html=True)
         
         # ===========================
         # kesimpulan otomatis
         # ===========================
-        st.subheader(" Kesimpulan Otomatis")
-        
+
         #kualitas model
         if r_square >= 0.75:
             kualitas_model = "sangat kuat"
@@ -495,22 +537,46 @@ if uploaded_file is not None:
         else:
             kualitas_model = "lemah"
             
-        kesimpulan = f"""
-        Berdasarkan hasil analisis regresi yang dilakukan, diketahui bahwa variabel
-        **{faktor_utama}** merupakan faktor yang memiliki pengaruh paling dominan
-        dalam model penelitian dengan nilai koefisien sebesar **{round(nilai_coef,3)}**.
+        st.markdown(f"""
+        <div style="
+        background-color:#0f5132;
+        padding:20px;
+        border-radius:10px;
+        border-left:6px solid #198754;
+        margin-top:20px;">
         
-        Model regresi yang dibentuk memiliki nilai **R<sup>2</sup> (R square) = {round(r_square,3)}**,
-        yang menunjukkan bahwa kemampuan model dalam menjelaskan variasi variabel 
-        target termasuk kategori **{kualitas_model}**.
+        <h3 style="color:white;">
+        KESIMPULAN
+        </h3>
         
-        Hasil uji asumsi menunjukkan bahwa model telah melalui pengujian nimalitas, multikolinearitas, dan
-        heteroskedastisitas.
+        <p style="
+        color:white;
+        text-allign:justify;
+        line-height:1.8;
+        margin:0;">
         
-        Secara keseluruhan, variabel-variabel penelitian memiliki kontribusi terhadap
-        variabel target sesuai kekuatan model yang diperoleh."""
+        Berdasarkan hasil analisis regresi yang 
+        dilakukan, diketahui bahwa variabel 
+        <b>{faktor_utama}</b> merupakan faktor yang 
+        memiliki pengaruh paling dominan dalam model 
+        penelitian dengan nilai koefisien sebesar <b>{round(nilai_coef,3)}</b>.
+        <br><br>
+        Model regresi yang dibentuk memiliki nilai 
+        <b>R<sup>2</sup> (R square) = {round(r_square,3)}</b>,
+        yang menunjukkan bahwa kemampuan model dalam menjelaskan 
+        variasi variabel target termasuk 
+        kategori <b>{kualitas_model}</b>.
+        <br><br>
+        Hasil uji asumsi menunjukkan bahwa model telah melalui 
+        pengujian normalitas, multikolinearitas, dan heteroskedastisitas.
+        <br></br>
+        Secara keseluruhan, variabel-variabel penelitian memiliki kontribusi 
+        terhadap variabel target sesuai kekuatan model yang diperoleh.
+        </p>
         
-        st.markdown(kesimpulan, unsafe_allow_html=True)
+        </div>""", unsafe_allow_html=True)
+        
+        # st.markdown(kesimpulan, unsafe_allow_html=True)
          
         # ===========================
         # grafik koefisien
@@ -547,6 +613,20 @@ if uploaded_file is not None:
     st.write(
         f"P-value = {round(p,4)} → {hasil_normal}"
     )    
+    st.info("""
+            Keterangan:
+            
+            • P-value adalah nilai probabilitas yang
+            digunakan untuk menguji apakah data memenuhi
+            asunsi normalitas.
+            
+            • Nilai ini diperoleh dari metode Shapito-wilk
+            yang membandingkan distribusi residual dengan
+            distribusi normal.
+            
+            • jika P-value > 0.05 →  data dianggap berdistribusi normal.
+            
+            • jika P-value < 0.05 →  data dianggap tidak berdistribusi normal.""")
     
     # uji multikolinearitas
     st.write("### Uji Multikolinearitas (VIF)")
@@ -569,6 +649,19 @@ if uploaded_file is not None:
     vif_df["Status"] = vif_df["VIF"].apply(lambda x: "Aman" if x < 10 else "Tinggi")
         
     st.dataframe(vif_df)
+    
+    st.info("""
+            Keterangan:
+            
+            • VIF (Variance Inflation Factor) digunakan untuk 
+            mengetahui hubungan antar variabel bebas.
+            
+            • Nilai VIF diperoleh dari perhitungan hubungan antar 
+            variabel independen.
+            
+            • VIF < 10 → aman (tidak terjadi multikolinearitas).
+            
+            • VIF > 10 → terjadi multikolinearitas.""")
         
     # uji heteroskedastisitas
     st.write("### Uji Heteroskedastisitas")
@@ -582,7 +675,19 @@ if uploaded_file is not None:
         hasil_bp = "Terdapat heteroskedastisitas"
         
     st.write(f"P-value = {round(p_bp,4)} → {hasil_bp} ")    
-        
+
+    st.info("""
+            Keterangan:
+            
+            • P-value digunakan untuk mengetahui apakah terdapat 
+            heteroskedastisitas pada model.
+            
+            • Nilai ini diperoleh dari metode Breusch-Pagan yang 
+            menguji apakah varians residual berubah-ubah.
+            
+            • Jika P-value > 0.05 → tidak terdapat heteroskedastisitas.
+            
+            • Jika P-value < 0.05 → terdapat heteroskedastisitas.""")    
         
     # =================================
     # VISUALISASI
