@@ -328,6 +328,34 @@ if uploaded_file is not None:
     
     st.dataframe(rel_df)
     
+    st.info("""
+           📖 Keterangan Uji Reliabilitas
+
+            • Reliabilitas digunakan untuk mengetahui konsistensi 
+            jawaban responden pada suatu variabel.
+
+            • Nilai Cronbach Alpha menunjukkan tingkat konsistensi instrumen penelitian.
+
+            Kriteria umum:
+
+            ✓ Cronbach Alpha ≥ 0.70 → Reliabel  
+            Instrumen dianggap konsisten sehingga dapat digunakan dalam penelitian.
+
+            ✗ Cronbach Alpha < 0.70 → Tidak Reliabel  
+            Instrumen dianggap kurang konsisten dan perlu dilakukan perbaikan atau evaluasi item pertanyaan.
+
+            Interpretasi tingkat reliabilitas:
+
+            • 0.90 - 1.00 → Sangat tinggi
+              
+            • 0.70 - 0.89 → Tinggi / Reliabel 
+             
+            • 0.60 - 0.69 → Cukup
+              
+            • 0.50 - 0.59 → Rendah 
+             
+            • < 0.50 → Sangat rendah""")
+    
     # =================================
     # KORELASI
     # ================================= 
