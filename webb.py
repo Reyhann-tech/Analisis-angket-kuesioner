@@ -204,7 +204,39 @@ if uploaded_file is not None:
     t_critical = t.ppf(1 - alpha/2, df)
     r_tabel = t_critical / np.sqrt(t_critical**2 + df)
     
-    st.write(f"R tabel ({n} responden) = {round(r_tabel,3)}")    
+    st.write(f"R tabel ({n} responden) = {round(r_tabel,3)}")
+    
+    st.info(f"""
+    📖 Penjelasan R Tabel
+
+    Apa itu R tabel?
+
+    R tabel adalah nilai batas yang digunakan
+    untuk menentukan apakah item kuesioner valid
+    atau tidak.
+
+    Dari mana R tabel diperoleh?
+
+    R tabel dihitung berdasarkan:
+
+    • Jumlah responden = {n}
+
+    • Derajat kebebasan (df)
+
+    df = n - 2
+
+    • Tingkat signifikansi (α = 0.05)
+
+    Kriteria:
+
+    ✓ r hitung > r tabel → item valid
+
+    ✗ r hitung < r tabel → item tidak valid
+
+    Semakin besar nilai r hitung dibanding
+    r tabel maka hubungan item terhadap
+    variabel semakin kuat.
+    """)    
     # =================================
     # RINGKASAN VARIABEL
     # =================================
@@ -526,7 +558,42 @@ if uploaded_file is not None:
         
         # R Square
         r_square = model.rsquared
-        st.write("R²:",round(r_square,3))
+        st.write("R² (r square):",round(r_square,3))
+        st.info(f"""
+        📖 Penjelasan R Square (R²)
+
+        Apa itu R Square?
+
+        R Square menunjukkan seberapa besar
+        kemampuan variabel independen (X)
+        menjelaskan variasi variabel target (Y).
+
+        Nilai R² saat ini:
+
+        R² = {round(r_square,3)}
+
+        Artinya:
+
+        Sekitar {round(r_square*100,1)}%
+        perubahan variabel Y dapat dijelaskan
+        oleh variabel dalam model.
+
+        Sedangkan sisanya:
+
+        {round((1-r_square)*100,1)}%
+
+        dipengaruhi faktor lain di luar model.
+
+        Interpretasi umum:
+
+        • R² < 0.25 → lemah
+
+        • 0.25-0.50 → cukup
+
+        • 0.50-0.75 → kuat
+
+        • >0.75 → sangat kuat
+        """)
         
         # informasi tambahan model
         st.write("Jumlah responden:", len(data))
@@ -679,6 +746,55 @@ if uploaded_file is not None:
             ax.annotate(str(round(p.get_height(),2)),
                         (p.get_x()+0.05, p.get_height()))
         st.pyplot(fig)
+        # penjelasan koefisien dan t-hitung
+        st.info("""
+        📖 Penjelasan Grafik Koefisien dan t hitung
+
+        Apa itu koefisien?
+
+        Koefisien adalah nilai yang menunjukkan
+        besar dan arah pengaruh suatu variabel
+        terhadap variabel target (Y).
+
+        Contoh:
+
+        Koefisien = 0.50
+
+        Artinya:
+
+        Jika X meningkat 1 satuan,
+        maka Y diperkirakan meningkat
+        0.50 satuan.
+
+        Koefisien positif:
+
+        → hubungan searah
+
+        Koefisien negatif:
+
+        → hubungan berlawanan arah
+
+
+        Apa itu t hitung?
+
+        t hitung digunakan untuk menguji apakah
+        pengaruh variabel tersebut signifikan
+        atau tidak.
+
+        Dari mana t hitung diperoleh?
+
+        Rumus:
+
+        t hitung = Koefisien / Standard Error
+
+        Semakin besar nilai absolut t hitung:
+
+        → semakin kuat bukti bahwa variabel
+        berpengaruh terhadap Y.
+
+        Nilai t hitung kemudian digunakan
+        untuk menghasilkan P-value.
+        """)
         
         st.subheader("Grafik P-value")
         fig2, ax2 = plt.subplots(figsize=(10,5))
@@ -795,6 +911,46 @@ if uploaded_file is not None:
         
         st.pyplot(fig_res)
         plt.close(fig_res)
+        
+        # Penjelasan distribusi residual
+        st.info(f"""
+        📖 Penjelasan Distribusi Residu
+
+        Apa itu residu?
+
+        Residu adalah selisih antara nilai aktual Y
+        dengan nilai prediksi model regresi.
+
+        Rumus:
+
+        Residual = Y aktual - Y prediksi
+
+        Dari mana nilai residu diperoleh?
+
+        Nilai residual dihitung dari:
+
+        • Data Y asli (hasil kuesioner)
+
+        dikurangi
+
+        • Nilai Y hasil prediksi model regresi
+
+        Grafik di atas menampilkan distribusi
+        residu untuk melihat apakah error model
+        menyebar secara normal.
+
+        Nilai P-value normalitas = {round(p,4)}
+
+        Interpretasi:
+
+        • Jika histogram membentuk pola menyerupai
+        kurva lonceng (bell curve), model cenderung
+        memenuhi asumsi normalitas.
+
+        • Jika terlalu miring atau memiliki banyak
+        ekor ekstrem, terdapat indikasi masalah
+        normalitas.
+        """)
         
         # deteksi outlier (Z-score)
         st.write("### Deteksi Outlier")
