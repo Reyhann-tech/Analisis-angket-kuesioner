@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from sklearn.linear_model import LinearRegression
 from scipy.stats import t
 from scipy.stats import shapiro
 from statsmodels.stats.outliers_influence import variance_inflation_factor
@@ -242,7 +241,9 @@ if uploaded_file is not None:
     # =================================
     # with tab1:    
     st.subheader("3. Ringkasan Variabel")
-    
+    st.write("### Statistik Deskriptif")
+    deskriptif = data[prefixes].describe().T
+    st.dataframe(deskriptif[["mean","std","min","max"]].round(3),use_container_width=True)
     ringkasan = []
     
     for var in prefixes:
@@ -407,6 +408,12 @@ if uploaded_file is not None:
     # heatmap korelasi
     # ===========================
     st.subheader("Grafik Korelasi (Heatmap)")
+    st.subheader("Hubungan Signifikan")
+    for i in range(len(prefixes)):
+        for j in range(i+1,len(prefixes)):
+            r = corr.iloc[i,j]
+            if abs(r)>=0.5:
+                st.success(f"{prefixes[i]} - {prefixes[j]} "f"(r={round(r,3)})")
     fig, ax = plt.subplots(figsize=(8,6))
     
     sns.heatmap(corr, annot=True, cmap="coolwarm", fmt=".2f", ax=ax)
@@ -499,6 +506,7 @@ if uploaded_file is not None:
             "p-value": model.pvalues[1:]
         })
         
+        
         # ===========================
         # intercept
         # ===========================
@@ -522,10 +530,17 @@ if uploaded_file is not None:
             "Koefisien": model.params.values,
             "t hitung": model.tvalues.values,
             "p-value": model.pvalues.values,})
+        
       
         # hapus cosnt
         coef_df = coef_df[coef_df
                           ["Variabel"]!="const"].copy()
+        st.subheader("Ranking Pengaruh Variabel")
+        ranking = coef_df.copy()
+        ranking["Absolut"] = ranking["Koefisien"].abs()
+        ranking = ranking.sort_values("Absolut",ascending=False)
+        ranking.index = range(1,len(ranking)+1)
+        st.dataframe(ranking[["Variabel","Koefisien","t hitung","p-value"]],use_container_width=True)
         
         # ===========================
         # Status signifikan
@@ -597,6 +612,7 @@ if uploaded_file is not None:
         
         # informasi tambahan model
         st.write("Jumlah responden:", len(data))
+        st.write("Adjusted R2 menjelaskan kemampuan model setelah pertimbangan jumlah variabel.")
         st.write("Adjust R²:", round(model.rsquared_adj,3))
         st.write("F-statistic:", round(model.fvalue,3))
         st.write("Prob(F):", model.f_pvalue)
@@ -653,7 +669,7 @@ if uploaded_file is not None:
         
         <p style="
         color:white;
-        text-allign:justify;
+        text-align:justify;
         line-height:1.8;
         margin:0;">
         
@@ -683,13 +699,13 @@ if uploaded_file is not None:
 
         #kualitas model
         if r_square >= 0.75:
-            kualitas_model = "sangat kuat"
+            kualitas_model = "Substansial"
         elif r_square >= 0.50:
-            kualitas_model = "kuat"
+            kualitas_model = "Moderat"
         elif r_square >= 0.25:
-            kualitas_model = "cukup"
+            kualitas_model = "Lemah"
         else:
-            kualitas_model = "lemah"
+            kualitas_model = "Sangat lemah"
             
         st.markdown(f"""
         <div style="
@@ -705,7 +721,7 @@ if uploaded_file is not None:
         
         <p style="
         color:white;
-        text-allign:justify;
+        text-align:justify;
         line-height:1.8;
         margin:0;">
         
@@ -826,7 +842,7 @@ if uploaded_file is not None:
         # if st.button("Prediksi"):
         #     input_df = pd.DataFrame([input_data])
         #     prediksi = model.predict(sm.add_constant( input_df, has_constant='add'))
-        #     st.success(f"prediksi Y = {round(prediksi.ilot[0],3)}")
+        #     st.success(f"prediksi Y = {round(prediksi.iloc[0],3)}")
         
         # # AI INTERPRETASI OTOMATIS
         # st.subheader(" AI interpretasi penelitian")
@@ -891,9 +907,9 @@ if uploaded_file is not None:
                 
                 • P-value adalah nilai probabilitas yang
                 digunakan untuk menguji apakah data memenuhi
-                asunsi normalitas.
+                asumsi normalitas.
                 
-                • Nilai ini diperoleh dari metode Shapito-wilk
+                • Nilai ini diperoleh dari metode Shapiro-wilk
                 yang membandingkan distribusi residual dengan
                 distribusi normal.
                 
@@ -1049,7 +1065,7 @@ if uploaded_file is not None:
         st.subheader("9. Diagram Jalur Penelitian")
         diagram = Digraph()
         
-        diagram.attr(rankdir='TB')
+        diagram.attr(rankdir='LR')
         
         diagram.attr(
             'node',
@@ -1060,7 +1076,6 @@ if uploaded_file is not None:
         
         variabel = prefixes
         target= "Y"
-        
         mediator = "Z" if "Z" in variabel else None
         # variabel bebas 
         independen = [
@@ -1081,37 +1096,41 @@ if uploaded_file is not None:
         # ambil koef
         koef = dict(zip(coef_df["Variabel"],
                         coef_df["Koefisien"]))
+        jumlah_panah = 0
         
         # buat panah
-        batas = 0.05
         for var in independen:
-                nilai = round(koef.get(var,0),3)
-                pval = p_value.get(var,1)
+                nilai = koef.get(var, 0)
+                pval = p_value.get(var, 1)
                 # tampil jika hanya signif
                 if pval < 0.05:
-                    warna = "green" if nilai > 0 else "red"
-                    diagram.edge(var, target,
-                                label=str(nilai),
-                                color=warna,
-                                penwidth='2')
-        if mediator:            
-            p_z = p_value.get("Z",1)
+                    warna = ("green" if nilai > 0 else "red")
+                    if mediator:
+                            diagram.edge(var, "Z",
+                                    label=f"{nilai:.3f}",
+                                    color=warna,
+                                    penwidth="2")
+                    else:
+                            diagram.edge(var, "Y",
+                                     label=f"{nilai:.3f}",
+                                     color=warna,
+                                     penwidth="2")
+                    jumlah_panah += 1
+        if mediator:
+            nilai_z = koef.get("Z", 0)            
+            p_z = p_value.get("Z", 1)
             if p_z < 0.05:
-                diagram.edge(mediator,
-                        target,
-                        label=str(round(koef.get("Z",0),3)),
-                        color="green" if koef.get("Z",0)>0 else
-                        "red",
-                        penwidth='2')          
+                warna_z = ("green" if nilai_z > 0 else "red")
+                diagram.edge("Z","Y",
+                        label=f"{nilai_z:.3f}",
+                        color=warna_z,
+                        penwidth='3')
+                jumlah_panah += 1          
         # tampilkan diagram hanya jika ada panah
-        jumlah_panah = 0 
-        for item in diagram.body:
-            if "->" in item:
-                jumlah_panah += 1
-        if jumlah_panah == 0:
+        if jumlah_panah == 0: 
             st.warning("Tidak ada hubungan signifikan yang ditemukan.")
         else:
-             st.graphviz_chart(diagram)              
+             st.graphviz_chart(diagram, use_container_width=True)              
         
         # keterangan
         st.info("""
