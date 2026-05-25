@@ -632,12 +632,12 @@ if uploaded_file is not None:
         # KUALITAS MODEL berdasarkan r2
         # ===========================
         if r_square >= 0.75:
-            kualitas = "sangat kuat"
+            kualitas = "Substansial (kuat)"
         elif r_square >= 0.50:
-            kualitas = "kuat"
+            kualitas = "Moderat"
         elif r_square >= 0.25:
-            kualitas = "cukup"
-        else:kualitas = "lemah"
+            kualitas = "Lemah"
+        else:kualitas = "Sangat lemah"
        
         st.markdown(f""" 
         <div style="
